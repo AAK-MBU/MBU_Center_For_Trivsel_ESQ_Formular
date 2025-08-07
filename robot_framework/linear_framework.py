@@ -12,11 +12,28 @@ from robot_framework import reset
 from robot_framework.exceptions import BusinessError, handle_error, log_exception
 from robot_framework import process
 from robot_framework import config
-from robot_framework import finalize
 
 
 def main():
     """The entry point for the framework. Should be called as the first thing when running the robot."""
+
+    # !!! DELETE THIS !!!
+
+    import os
+    import json
+
+    sys.argv = [
+        "linear_framework.py",
+        "DADJ - Center for Trivsel ESQ Formular TEST",
+        os.getenv("ORCHESTRATOR_CONNECTION_STRING"),
+        os.getenv("ORCHESTRATOR_ENCRYPTION_KEY"),
+        json.dumps({
+            "os2_webform_id": "center_for_trivsel_esq_formular",
+        })
+    ]
+
+    # !!! DELETE THIS !!!
+
     orchestrator_connection = OrchestratorConnection.create_connection_from_args()
     sys.excepthook = log_exception(orchestrator_connection)
 
@@ -47,5 +64,3 @@ def main():
 
     if config.FAIL_ROBOT_ON_TOO_MANY_ERRORS and error_count == config.MAX_RETRY_COUNT:
         raise RuntimeError("Process failed too many times.")
-
-    finalize.finalize(orchestrator_connection)

@@ -3,8 +3,8 @@ requires = ["setuptools>=65.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "robot_framework"
-version = "0.0.2"
+name = "center_for_trivsel_esq_robot"
+version = "1.0.1"
 authors = [
   { name="MBU", email="rpa@mbu.aarhus.dk" },
 ]
@@ -27,7 +27,8 @@ dependencies = [
     "uiautomation",
     "requests_ntlm >= 1.2.0",
     "pandas >= 2.2.3",
-    "itk-dev-shared-components == 2.9.0"
+    "itk-dev-shared-components == 2.9.0",
+    "mbu-dev-shared-components>=0.4.2",
 ]
 
 [project.optional-dependencies]
