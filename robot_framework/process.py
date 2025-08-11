@@ -6,7 +6,7 @@ import json
 
 import urllib.parse
 
-import datetime
+from datetime import date, timedelta
 
 import traceback
 
@@ -46,26 +46,103 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
 
     os2_webform_id = json.loads(orchestrator_connection.process_arguments)["os2_webform_id"]
 
-    current_day_of_month = str(pd.Timestamp.now().day)
+    date_today = pd.Timestamp.now().date()
+
+    # current_day_of_month = str(pd.Timestamp.now().day)
+    current_day_of_month = "1"  # REMOVE
     if current_day_of_month == "1":
-        print("Today is the first of the month - we will update the Excel file with new submissions.")
-        orchestrator_connection.log_trace("Today is the first of the month - we will update the Excel file with new submissions.")
+        print("Today is the first of the month - we will update the Excel files with new submissions.")
+        orchestrator_connection.log_trace("Today is the first of the month - we will update the Excel files with new submissions.")
 
-        # RUN EXCEL UPDATE FLOW
-
-        new_forms = []
+        # Last + first day of last month
+        end_date = date_today.replace(day=1) - pd.Timedelta(days=1)
+        start_date = end_date.replace(day=1)
 
         username = orchestrator_connection.get_credential("SvcRpaMBU002").username
         password = orchestrator_connection.get_credential("SvcRpaMBU002").password
 
-        sharepoint_folder_url = "https://aarhuskommune.sharepoint.com"
-        site_name = ""
-        sharepoint_document_library = "Delte dokumenter"
+        sharepoint_api = Sharepoint(
+            username=username,
+            password=password,
+            site_url="https://aarhuskommune.sharepoint.com",
+            site_name="MBURPA",  # CHANGE TO CENTER FOR TRIVSEL WHEN DEPLOYED
+            document_library="Delte dokumenter"
+        )
 
-        folder_name = ""
-        excel_file_name = ""
+        folder_name = "Misc"  # CHANGE TO "Center for trivsel" WHEN DEPLOYED
+        unge_excel_file_name = "center_for_trivsel_esq_unge.xlsx"  # CHANGE WHEN DEPLOYED
+        foraeldre_excel_file_name = "center_for_trivsel_esq_foraeldre.xlsx"  # CHANGE WHEN DEPLOYED
 
-        sharepoint_api = Sharepoint(username=username, password=password, site_url=sharepoint_folder_url, site_name=site_name, document_library=sharepoint_document_library)
+        files_in_sharepoint = sharepoint_api.fetch_files_list(folder_name=folder_name)
+
+        # Fetch all submissions once for the whole period
+        all_submissions = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id)
+
+        # Split and transform into two DataFrames
+        df_unge = helper_functions.build_df(all_submissions, "Ung/selvbesvarelse", formular_mappings.center_for_trivsel_esq_barn_mapping)
+        df_foraeldre = helper_functions.build_df(all_submissions, "Forælder (inklusiv plejeforældre)", formular_mappings.center_for_trivsel_esq_foraelder_mapping)
+
+        file_map = {
+            unge_excel_file_name: df_unge,
+            foraeldre_excel_file_name: df_foraeldre
+        }
+
+        for excel_file_name, df in file_map.items():
+            if excel_file_name not in files_in_sharepoint:
+                print(f"Excel file '{excel_file_name}' not found - creating new.")
+                orchestrator_connection.log_trace(f"Excel file '{excel_file_name}' not found - creating new.")
+
+                excel_stream = BytesIO()
+                df.to_excel(excel_stream, index=False, engine="openpyxl", sheet_name="Submissions")
+                excel_stream.seek(0)
+
+                sharepoint_api.upload_file_from_bytes(
+                    binary_content=excel_stream.getvalue(),
+                    file_name=excel_file_name,
+                    folder_name=folder_name
+                )
+
+            else:
+                print(f"Fetching forms from {start_date} to {end_date} for '{excel_file_name}'.")
+                ranged_submissions = helper_functions.get_forms_data(
+                    sql_server_connection_string,
+                    os2_webform_id,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+
+                # Filter/transform for just this file
+                if excel_file_name == unge_excel_file_name:
+                    new_rows = helper_functions.build_df(ranged_submissions, "Ung/selvbesvarelse", formular_mappings.center_for_trivsel_esq_barn_mapping)
+
+                else:
+                    new_rows = helper_functions.build_df(ranged_submissions, "Forælder (inklusiv plejeforældre)", formular_mappings.center_for_trivsel_esq_foraelder_mapping)
+
+                if not new_rows.empty:
+                    sharepoint_api.append_row_to_sharepoint_excel(
+                        folder_name=folder_name,
+                        excel_file_name=excel_file_name,
+                        sheet_name="Submissions",
+                        new_rows=new_rows.to_dict(orient="records")
+                    )
+
+            # Format after create/append
+            sharepoint_api.format_and_sort_excel_file(
+                folder_name=folder_name,
+                excel_file_name=excel_file_name,
+                sheet_name="Submissions",
+                sorting_keys=[{"key": "A", "ascending": False, "type": "str"}],
+                bold_rows=[1],
+                align_horizontal="left",
+                align_vertical="top",
+                italic_rows=None,
+                font_config=None,
+                column_widths=100,
+                freeze_panes="A2"
+            )
+
+            print()
+            print()
 
     # ALWAYS RUN DAILY EMAIL SUBMISSION FLOW
     orchestrator_connection.log_trace("Running daily email submission flow.")
@@ -74,7 +151,6 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
     # date_yesterday = (pd.Timestamp.now() - pd.Timedelta(days=1)).date()
     # all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_yesterday)
 
-    date_today = pd.Timestamp.now().date()
     all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_today)
 
     forms_by_cpr = {}

@@ -11,6 +11,26 @@ from sqlalchemy import create_engine
 
 from OpenOrchestrator.orchestrator_connection.connection import OrchestratorConnection
 
+from robot_framework.sub_processes import formular_mappings
+
+
+def build_df(submissions, role, mapping):
+    """
+    Build a DataFrame from the given submissions and mapping for the specified role.
+    The role determines which mapping to use and which submissions to include.
+    """
+    rows = []
+
+    for submission in submissions:
+        if submission["data"].get("hvem_udfylder_spoergeskemaet") != role:
+            continue
+
+        serial = submission["entity"]["serial"][0]["value"]
+
+        rows.append(formular_mappings.transform_form_submission(serial, submission, mapping))
+
+    return pd.DataFrame(rows)
+
 
 def get_forms_data(
     conn_string: str,
@@ -29,47 +49,37 @@ def get_forms_data(
 
     print("inside get_forms_data")
 
+    where_clause = ""
+
     # Build query depending on which filter type is used
     if start_date and end_date:
-        query = """
-            SELECT
-                form_id,
-                form_data,
-                CAST(form_submitted_date AS datetime) AS form_submitted_date
-            FROM
-                [RPA].[journalizing].[Forms]
-            WHERE
-                form_type = ?
-                AND form_data IS NOT NULL
-                AND form_submitted_date IS NOT NULL
-                AND CAST(form_submitted_date AS date) BETWEEN ? AND ?
-            ORDER BY
-                form_submitted_date DESC
-        """
+        where_clause = "AND CAST(form_submitted_date AS date) BETWEEN ? AND ?"
 
         query_params = (form_type, start_date, end_date)
 
     elif target_date:
-        query = """
-            SELECT
-                form_id,
-                form_data,
-                CAST(form_submitted_date AS datetime) AS form_submitted_date
-            FROM
-                [RPA].[journalizing].[Forms]
-            WHERE
-                form_type = ?
-                AND form_data IS NOT NULL
-                AND form_submitted_date IS NOT NULL
-                AND CAST(form_submitted_date AS date) = ?
-            ORDER BY
-                form_submitted_date DESC
-        """
+        where_clause = "AND CAST(form_submitted_date AS date) = ?"
 
         query_params = (form_type, target_date)
 
     else:
-        raise ValueError("You must provide either a target_date or both start_date and end_date.")
+        query_params = (form_type,)
+
+    query = f"""
+        SELECT
+            form_id,
+            form_data,
+            CAST(form_submitted_date AS datetime) AS form_submitted_date
+        FROM
+            [RPA].[journalizing].[Forms]
+        WHERE
+            form_type = ?
+            AND form_data IS NOT NULL
+            AND form_submitted_date IS NOT NULL
+            {where_clause}
+        ORDER BY
+            form_submitted_date DESC
+    """
 
     # Create SQLAlchemy engine
     encoded_conn_str = urllib.parse.quote_plus(conn_string)
