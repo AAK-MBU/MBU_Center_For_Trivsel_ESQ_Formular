@@ -1,28 +1,12 @@
 """This module contains the main process of the robot."""
 
-import sys
-
 import json
-
-import urllib.parse
-
-from datetime import date, timedelta
 
 import traceback
 
-from typing import Dict, Any
-
 from io import BytesIO
 
-import math
-
 import pandas as pd
-
-import openpyxl
-
-from sqlalchemy import create_engine
-
-from openpyxl.styles import Alignment
 
 from OpenOrchestrator.orchestrator_connection.connection import OrchestratorConnection
 
@@ -32,8 +16,8 @@ from mbu_dev_shared_components.database import constants
 
 from mbu_dev_shared_components.msoffice365.sharepoint_api.files import Sharepoint
 
-from robot_framework.sub_processes import formular_mappings
 from robot_framework.sub_processes import helper_functions
+from robot_framework.sub_processes import formular_mappings
 
 
 def process(orchestrator_connection: OrchestratorConnection) -> None:
@@ -48,8 +32,7 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
 
     date_today = pd.Timestamp.now().date()
 
-    # current_day_of_month = str(pd.Timestamp.now().day)
-    current_day_of_month = "1"  # REMOVE
+    current_day_of_month = str(pd.Timestamp.now().day)
     if current_day_of_month == "1":
         print("Today is the first of the month - we will update the Excel files with new submissions.")
         orchestrator_connection.log_trace("Today is the first of the month - we will update the Excel files with new submissions.")
@@ -148,10 +131,8 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
     orchestrator_connection.log_trace("Running daily email submission flow.")
     print("Running daily email submission flow.")
 
-    # date_yesterday = (pd.Timestamp.now() - pd.Timedelta(days=1)).date()
-    # all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_yesterday)
-
-    all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_today)
+    date_yesterday = (pd.Timestamp.now() - pd.Timedelta(days=1)).date()
+    all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_yesterday)
 
     forms_by_cpr = {}
 

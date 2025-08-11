@@ -14,24 +14,6 @@ from OpenOrchestrator.orchestrator_connection.connection import OrchestratorConn
 from robot_framework.sub_processes import formular_mappings
 
 
-def build_df(submissions, role, mapping):
-    """
-    Build a DataFrame from the given submissions and mapping for the specified role.
-    The role determines which mapping to use and which submissions to include.
-    """
-    rows = []
-
-    for submission in submissions:
-        if submission["data"].get("hvem_udfylder_spoergeskemaet") != role:
-            continue
-
-        serial = submission["entity"]["serial"][0]["value"]
-
-        rows.append(formular_mappings.transform_form_submission(serial, submission, mapping))
-
-    return pd.DataFrame(rows)
-
-
 def get_forms_data(
     conn_string: str,
     form_type: str,
@@ -113,20 +95,22 @@ def get_forms_data(
     return extracted_data
 
 
-def get_credentials_and_constants(orchestrator_connection: OrchestratorConnection) -> Dict[str, Any]:
-    """Retrieve necessary credentials and constants from the orchestrator connection."""
-    try:
-        credentials = {
-            "go_api_endpoint": orchestrator_connection.get_constant('go_api_endpoint').value,
-            "go_api_username": orchestrator_connection.get_credential('go_api').username,
-            "go_api_password": orchestrator_connection.get_credential('go_api').password,
-            "os2_api_key": orchestrator_connection.get_credential('os2_api').password,
-            "sql_conn_string": orchestrator_connection.get_constant('DbConnectionString').value,
-            "journalizing_tmp_path": orchestrator_connection.get_constant('journalizing_tmp_path').value,
-        }
-        return credentials
-    except AttributeError as e:
-        raise SystemExit(e) from e
+def build_df(submissions, role, mapping):
+    """
+    Build a DataFrame from the given submissions and mapping for the specified role.
+    The role determines which mapping to use and which submissions to include.
+    """
+    rows = []
+
+    for submission in submissions:
+        if submission["data"].get("hvem_udfylder_spoergeskemaet") != role:
+            continue
+
+        serial = submission["entity"]["serial"][0]["value"]
+
+        rows.append(formular_mappings.transform_form_submission(serial, submission, mapping))
+
+    return pd.DataFrame(rows)
 
 
 def format_html_table(table_att: dict) -> str:
@@ -142,3 +126,19 @@ def format_html_table(table_att: dict) -> str:
     html += '</table>'
 
     return html
+
+
+def get_credentials_and_constants(orchestrator_connection: OrchestratorConnection) -> Dict[str, Any]:
+    """Retrieve necessary credentials and constants from the orchestrator connection."""
+    try:
+        credentials = {
+            "go_api_endpoint": orchestrator_connection.get_constant('go_api_endpoint').value,
+            "go_api_username": orchestrator_connection.get_credential('go_api').username,
+            "go_api_password": orchestrator_connection.get_credential('go_api').password,
+            "os2_api_key": orchestrator_connection.get_credential('os2_api').password,
+            "sql_conn_string": orchestrator_connection.get_constant('DbConnectionString').value,
+            "journalizing_tmp_path": orchestrator_connection.get_constant('journalizing_tmp_path').value,
+        }
+        return credentials
+    except AttributeError as e:
+        raise SystemExit(e) from e
