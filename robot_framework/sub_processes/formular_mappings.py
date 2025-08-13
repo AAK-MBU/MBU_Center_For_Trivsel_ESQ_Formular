@@ -108,20 +108,26 @@ def transform_form_submission(form_serial_number, form: dict, mapping: dict) -> 
                 if value in answer_scores:
                     if nested_key in inverted_keys:
                         total_score += inverted_answer_scores[value]
+
                     else:
                         total_score += answer_scores[value]
+
                     score_count += 1
 
                 # Standard formatting logic
                 if isinstance(value, list):
                     value = ", ".join(str(item) for item in value)
+
                 elif isinstance(value, str):
                     value = value.replace("\r\n", ". ").replace("\n", ". ")
+
                     if value.startswith("[") and value.endswith("]"):
                         try:
                             parsed = ast.literal_eval(value)
+
                             if isinstance(parsed, list):
                                 value = ", ".join(str(item) for item in parsed)
+
                         except Exception:
                             value = value.strip("[]").replace("'", "").replace('"', "").strip()
 
@@ -132,13 +138,17 @@ def transform_form_submission(form_serial_number, form: dict, mapping: dict) -> 
 
             if isinstance(value, list):
                 value = ", ".join(str(item) for item in value)
+
             elif isinstance(value, str):
                 value = value.replace("\r\n", ". ").replace("\n", ". ")
+
                 if value.startswith("[") and value.endswith("]"):
                     try:
                         parsed = ast.literal_eval(value)
+
                         if isinstance(parsed, list):
                             value = ", ".join(str(item) for item in parsed)
+
                     except Exception:
                         value = value.strip("[]").replace("'", "").replace('"', "").strip()
 
@@ -152,6 +162,7 @@ def transform_form_submission(form_serial_number, form: dict, mapping: dict) -> 
         completed_dt = datetime.fromisoformat(completed_str)
         transformed["Oprettet"] = created_dt.strftime("%Y-%m-%d %H:%M:%S")
         transformed["Gennemført"] = completed_dt.strftime("%Y-%m-%d %H:%M:%S")
+
     except (KeyError, IndexError, ValueError):
         transformed["Oprettet"] = None
         transformed["Gennemført"] = None

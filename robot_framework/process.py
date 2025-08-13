@@ -193,9 +193,15 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
                 for _, spg in mapping["spoergsmaal_foraelder_tabel"].items():
                     table_att[spg] = transformed_row.get(spg)
 
+                table_att["Hvad var rigtig godt ved behandlingen?"] = transformed_row["Hvad var rigtig godt ved behandlingen?"]
+                table_att["Var der noget du ikke synes om eller noget der kan forbedres?"] = transformed_row["Var der noget du ikke synes om eller noget der kan forbedres?"]
+                table_att["Er der andet du ønsker at fortælle os, om det forløb I har haft?"] = transformed_row["Er der andet du ønsker at fortælle os, om det forløb I har haft?"]
+
             else:
                 for _, spg in mapping["spoergsmaal_barn_tabel"].items():
                     table_att[spg] = transformed_row.get(spg)
+
+                table_att["Her er plads til, at du kan skrive, hvad du tænker eller føler om behandlingen"] = transformed_row["Her er plads til, at du kan skrive, hvad du tænker eller føler om behandlingen"]
 
             table_att["Average answer score"] = transformed_row["Average answer score"]
 
