@@ -132,10 +132,10 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
     orchestrator_connection.log_trace("Running daily email submission flow.")
     print("Running daily email submission flow.")
 
+    forms_by_cpr = {}
+
     date_yesterday = (pd.Timestamp.now() - pd.Timedelta(days=1)).date()
     all_yesterdays_forms = helper_functions.get_forms_data(sql_server_connection_string, os2_webform_id, target_date=date_yesterday)
-
-    forms_by_cpr = {}
 
     approved_emails_bytes = sharepoint_api.fetch_file_using_open_binary(
         file_name="Godkendte emails.xlsx",
