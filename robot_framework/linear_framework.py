@@ -19,18 +19,18 @@ def main():
 
     # !!! DELETE THIS !!!
 
-    # import os
-    # import json
+    import os
+    import json
 
-    # sys.argv = [
-    #     "linear_framework.py",
-    #     "DADJ - Center for Trivsel ESQ Formular TEST",
-    #     os.getenv("ORCHESTRATOR_CONNECTION_STRING"),
-    #     os.getenv("ORCHESTRATOR_ENCRYPTION_KEY"),
-    #     json.dumps({
-    #         "os2_webform_id": "center_for_trivsel_esq_formular",
-    #     })
-    # ]
+    sys.argv = [
+        "linear_framework.py",
+        "DADJ - Center for Trivsel ESQ Formular TEST",
+        os.getenv("ORCHESTRATOR_CONNECTION_STRING"),
+        os.getenv("ORCHESTRATOR_ENCRYPTION_KEY"),
+        json.dumps({
+            "os2_webform_id": "center_for_trivsel_esq_formular",
+        })
+    ]
 
     # !!! DELETE THIS !!!
 
