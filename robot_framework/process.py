@@ -41,11 +41,11 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
         username=username,
         password=password,
         site_url="https://aarhuskommune.sharepoint.com",
-        site_name="MBURPA",  # CHANGE TO CENTER FOR TRIVSEL WHEN DEPLOYED
+        site_name="CenterforTrivsel",
         document_library="Delte dokumenter"
     )
 
-    folder_name = "Misc"  # CHANGE TO "Center for trivsel" WHEN DEPLOYED
+    folder_name = "General/ESQ"
 
     current_day_of_month = str(pd.Timestamp.now().day)
     if current_day_of_month == "1":
