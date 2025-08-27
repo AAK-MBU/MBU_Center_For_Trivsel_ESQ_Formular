@@ -144,7 +144,13 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
 
     approved_emails_df = pd.read_excel(BytesIO(approved_emails_bytes))
 
-    approved_emails = set(approved_emails_df['email'].dropna().str.strip().str.lower().tolist())
+    # Create dictionary {az-ident: email}, dropping NaNs and stripping/normalizing
+    approved_emails_dict = dict(
+        zip(
+            approved_emails_df['az-ident'].dropna().str.strip(),
+            approved_emails_df['email'].dropna().str.strip().str.lower()
+        )
+    )
 
     if len(all_yesterdays_forms) > 0:
         for form in all_yesterdays_forms:
@@ -164,8 +170,11 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
 
                 transformed_row = formular_mappings.transform_form_submission(serial, form, mapping)
 
-                if transformed_row["Tilkoblet email"].strip().lower() not in approved_emails:
-                    transformed_row["Tilkoblet email"] = "dadj@aarhus.dk"  # CHANGE to Center for Trivsel fælles email when deployed
+                if transformed_row["AZ-ident"].strip() not in approved_emails_dict:
+                    transformed_row["Tilkoblet email"] = orchestrator_connection.get_constant("E-mail").value  # CHANGE to Center for Trivsel fælles email when deployed
+
+                else:
+                    transformed_row["Tilkoblet email"] = approved_emails_dict[transformed_row["AZ-ident"].strip().lower()]
 
                 cpr = transformed_row["Barnets/Den unges CPR-nummer"]
 

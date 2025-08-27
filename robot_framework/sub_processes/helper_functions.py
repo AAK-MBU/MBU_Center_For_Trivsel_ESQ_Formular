@@ -141,6 +141,7 @@ def get_credentials_and_constants(orchestrator_connection: OrchestratorConnectio
             "os2_api_key": orchestrator_connection.get_credential('os2_api').password,
             "sql_conn_string": orchestrator_connection.get_constant('DbConnectionString').value,
             "journalizing_tmp_path": orchestrator_connection.get_constant('journalizing_tmp_path').value,
+            "rpa_mail": orchestrator_connection.get_constant('E-mail').value,
         }
 
         return credentials
