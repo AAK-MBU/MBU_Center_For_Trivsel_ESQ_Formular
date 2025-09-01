@@ -8,7 +8,7 @@ from OpenOrchestrator.orchestrator_connection.connection import OrchestratorConn
 
 from robot_framework import config
 from robot_framework import error_screenshot
-from robot_framework import servicenow_handler
+# from robot_framework import servicenow_handler
 
 
 class BusinessError(Exception):
