@@ -172,7 +172,7 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
                 transformed_row = formular_mappings.transform_form_submission(serial, form, mapping)
 
                 if transformed_row["AZ-ident"].strip() not in approved_emails_dict:
-                    transformed_row["Tilkoblet email"] = orchestrator_connection.get_constant("E-mail").value  # CHANGE to Center for Trivsel fælles email when deployed
+                    transformed_row["Tilkoblet email"] = orchestrator_connection.get_constant("center_for_trivsel_mail").value
 
                 else:
                     transformed_row["Tilkoblet email"] = approved_emails_dict[transformed_row["AZ-ident"].strip().lower()]
