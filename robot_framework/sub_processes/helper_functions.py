@@ -26,10 +26,9 @@ def get_forms_data(
     Supports either:
       - exact date (target_date)
       - date range (start_date + end_date)
+      - no date filter (all submissions for form_type)
     Skips entries marked as purged.
     """
-
-    print("inside get_forms_data")
 
     where_clause = ""
 
@@ -100,6 +99,7 @@ def build_df(submissions, role, mapping):
     Build a DataFrame from the given submissions and mapping for the specified role.
     The role determines which mapping to use and which submissions to include.
     """
+
     rows = []
 
     for submission in submissions:
@@ -129,7 +129,10 @@ def format_html_table(table_att: dict) -> str:
 
 
 def get_credentials_and_constants(orchestrator_connection: OrchestratorConnection) -> Dict[str, Any]:
-    """Retrieve necessary credentials and constants from the orchestrator connection."""
+    """
+    Retrieve necessary credentials and constants from the orchestrator connection.
+    """
+
     try:
         credentials = {
             "go_api_endpoint": orchestrator_connection.get_constant('go_api_endpoint').value,
@@ -138,7 +141,10 @@ def get_credentials_and_constants(orchestrator_connection: OrchestratorConnectio
             "os2_api_key": orchestrator_connection.get_credential('os2_api').password,
             "sql_conn_string": orchestrator_connection.get_constant('DbConnectionString').value,
             "journalizing_tmp_path": orchestrator_connection.get_constant('journalizing_tmp_path').value,
+            "rpa_mail": orchestrator_connection.get_constant('E-mail').value,
         }
+
         return credentials
+
     except AttributeError as e:
         raise SystemExit(e) from e
