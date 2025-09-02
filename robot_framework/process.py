@@ -47,8 +47,7 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
 
     folder_name = "General/ESQ"
 
-    # current_day_of_month = str(pd.Timestamp.now().day)
-    current_day_of_month = "1"
+    current_day_of_month = str(pd.Timestamp.now().day)
     if current_day_of_month == "1":
         print("Today is the first of the month - we will update the Excel files with new submissions.")
         orchestrator_connection.log_trace("Today is the first of the month - we will update the Excel files with new submissions.")
