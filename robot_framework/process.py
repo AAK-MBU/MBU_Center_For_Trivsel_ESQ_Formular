@@ -48,6 +48,7 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
     folder_name = "General/ESQ"
 
     current_day_of_month = str(pd.Timestamp.now().day)
+    current_day_of_month = "1"
     if current_day_of_month == "1":
         print("Today is the first of the month - we will update the Excel files with new submissions.")
         orchestrator_connection.log_trace("Today is the first of the month - we will update the Excel files with new submissions.")
@@ -60,9 +61,10 @@ def process(orchestrator_connection: OrchestratorConnection) -> None:
         foraeldre_excel_file_name = "Center for trivsel - ESQ besvarelser fra forældre.xlsx"
 
         files_in_sharepoint = sharepoint_api.fetch_files_list(folder_name=folder_name)
+        file_names = [f["Name"] for f in files_in_sharepoint]
 
         for excel_file_name in [unge_excel_file_name, foraeldre_excel_file_name]:
-            if excel_file_name not in files_in_sharepoint:
+            if excel_file_name not in file_names:
                 print(f"Excel file '{excel_file_name}' not found - creating new.")
                 orchestrator_connection.log_trace(f"Excel file '{excel_file_name}' not found - creating new.")
 
