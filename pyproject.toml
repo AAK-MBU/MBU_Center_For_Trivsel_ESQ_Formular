@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "center_for_trivsel_esq_robot"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
   { name="MBU", email="rpa@mbu.aarhus.dk" },
 ]
